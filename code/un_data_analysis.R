@@ -158,3 +158,5 @@ co2plot <- ggplot(data=gap_co2_region)+
   labs(x = "GDP Per Capita", y = "Per Capita Emissions")
 
 ggsave("co2_emissions_plot.jpg", plot = co2plot, width = 6, height = 4) 
+
+write_csv(gap_co2_region, "data/gapminder_co2.csv")
