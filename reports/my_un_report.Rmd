@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r packages}
+```{r packages, include=FALSE}
 library(tidyverse)##contains ggplot package
 ```
 
@@ -19,6 +19,8 @@ This report was prepared to the attention of the United Nations. It analyzes the
 gapminder_1997 <- read_csv("../data/gapminder_1997.csv")
 ```
 
+#My Plot
+
 ```{r gdp_lifeexp_1997}
 ggplot(data = gapminder_1997, aes(x = gdpPercap, y = lifeExp, color=continent)) +
   labs(x = "GDP Per Capita", y = "Life Expectancy", 
@@ -26,3 +28,27 @@ ggplot(data = gapminder_1997, aes(x = gdpPercap, y = lifeExp, color=continent)) 
   geom_point()+
   scale_color_brewer(palette = "Set1")
 ```
+
+```{r data_summary, include=FALSE}
+
+  nCountries <- length(unique(gapminder_1997$country)) 
+
+  minGDP <- round(min(gapminder_1997$gdpPercap), digits=0) 
+
+  maxGDP <- round(max(gapminder_1997$gdpPercap), digits=0)
+```
+
+The above plot shows the relationship between GDP per capita and life expectancy 
+for a total of `r nCountries` countries. For this set of countries, 
+economic wealth ranged from a minimum of USD `r minGDP`
+to a maximum of USD `r maxGDP` per capita.
+
+# Introduction
+
+### Exercise
+<ul>
+ 1. HTML
+ 1. <i>ggplot()</i>
+ 1. <b><i>HKL3000 download</i></b>
+ *<a href="https://rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf">R Cheatsheet</a>
+</ul>
