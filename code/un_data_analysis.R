@@ -82,3 +82,79 @@ TheLimited
 gapminder_data <- read_csv("data/gapminder_data.csv") %>%
   filter(continent == "Americas", year == 2007) %>% 
   select(-continent, -year)
+
+View(gapminder_data)
+
+read_csv("data/co2-un-data.csv", skip = 2,
+         col_names = c("region", "country", "year", "series", "value", 
+                       "footnotes", "source"))
+
+co2_data <- read_csv("data/co2-un-data.csv", skip = 2,
+                     col_names = c("region", "country", "year", "series", "value", 
+                                   "footnotes", "source"))
+View(co2_data)
+
+#Goals: data from a year that is close to 2007
+#A column for each country and type of CO2 emission
+
+#exercise select only country year series value
+co2_data %>% 
+  select(country, year, series, value)
+
+co2_emissions <- co2_data %>% 
+  select(country, year, series, value) %>% 
+  mutate(series = recode(series, "Emissions (thousand metric tons of carbon dioxide)" = "total_emissions", 
+                         "Emissions per capita (metric tons of carbon dioxide)" = "per_capita_emissions")) %>% 
+  pivot_wider(names_from = series, values_from = value) %>% 
+  filter(year == 2005) %>% 
+  select(-year)
+
+View(co2_emissions)
+
+#joining the datasets
+inner_join(gapminder_data, co2_emissions, by = "country")
+anti_join(gapminder_data, co2_emissions)
+
+co2_emissions <- co2_emissions %>% 
+  mutate(country = recode(country, "Bolivia (Plurin. State of)" = "Bolivia", "United States of America" = "United States", "Venezuela (Boliv. Rep. of)" = "Venezuela"))
+
+anti_join(gapminder_data, co2_emissions)
+
+View(co2_emissions)
+
+#change PR to be part of US
+gapminder_data <- gapminder_data %>% 
+  mutate(country = recode(country, "Puerto Rico" = "United States")) %>% 
+  group_by(country) %>% 
+  summarize(lifeExp = sum((lifeExp * pop)/sum(pop)), 
+            gdpPercap = sum((gdpPercap * pop)/ sum(pop), pop = sum(pop)))
+
+anti_join(gapminder_data, co2_emissions)
+gapminder_co2 <- inner_join(gapminder_data, co2_emissions, by = "country")
+
+#mutate and the if_else
+#create region variable
+gap_co2_region <- gapminder_co2 %>% 
+  mutate(region = if_else(country == "Canada" | country == "United States" | country == "Mexico",
+                          "north", "south"))
+
+#How much co2 does "north" emit
+gap_co2_region %>% 
+  group_by(region) %>% 
+  summarize(sum(total_emissions))
+gap_co2_region %>% 
+  group_by(region) %>% 
+  summarize(sum(per_capita_emissions))
+
+#exercise: create scatter plot of gdp vs Co2 emissions, colored by region
+ggplot(data=gap_co2_region)+
+  aes(x = gdpPercap, y= per_capita_emissions, color = region)+
+  geom_point()+
+  labs(x = "GDP Per Capita", y = "Per Capita Emissions")
+
+co2plot <- ggplot(data=gap_co2_region)+
+  aes(x = gdpPercap, y= per_capita_emissions, color = region)+
+  geom_point()+
+  labs(x = "GDP Per Capita", y = "Per Capita Emissions")
+
+ggsave("co2_emissions_plot.jpg", plot = co2plot, width = 6, height = 4) 
